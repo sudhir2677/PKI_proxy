@@ -5,10 +5,15 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.example.utils.FileSeparator;
+import org.example.utils.PathUtil;
+import org.example.utils.X509CertTemplate;
 
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -21,6 +26,12 @@ public class RootCert {
 
     public void createCertTest() {
         try {
+            // Get the OS-specific file separator
+            String separator = FileSeparator.getOSSeparator().getSeparator();
+            String path = PathUtil.getCurrentFilePath();
+
+            System.out.println("Separator " + separator + "  path : " + path);
+
             // Add BouncyCastle as a security provider
             Security.addProvider(new BouncyCastleProvider());
 
@@ -29,36 +40,28 @@ public class RootCert {
             keyGen.initialize(2048);
             KeyPair keyPair = keyGen.generateKeyPair();
 
-            // Set certificate details
-            X500Name subject = new X500Name("CN=AP cert Testing 2014,O=Msft corp,L=Noida,ST=Delhi,C=IN");
-
-            // Certificate valid from now to one year
-            Date startDate = new Date();
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.YEAR, 2);
-            Date endDate = calendar.getTime();
-
-            // Build the certificate
-            BigInteger serialNumber = new BigInteger(64, new java.security.SecureRandom());
-            X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
-                    subject,                 // Issuer (self-signed, so same as subject)
-                    serialNumber,            // Serial number
-                    startDate,               // Validity start date
-                    endDate,                 // Validity end date
-                    subject,                 // Subject
-                    keyPair.getPublic()      // Public key
-            );
+            // get RootCert by reading RootCertTemplate.ini file
+            X509v3CertificateBuilder certBuilder = X509CertTemplate.getX509Certificate("RootCertTemplate.ini", keyPair.getPublic());
 
             // Sign the certificate
             ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keyPair.getPrivate());
             X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBuilder.build(signer));
 
-            // Save the certificate and private key to files
-            try (FileOutputStream fos = new FileOutputStream("src\\main\\java\\org\\example\\RootCert\\cert.pem")) {
+            /*// Save the certificate and private key to files
+            try (FileOutputStream fos = new FileOutputStream(path + separator + "RootCert" + separator + "cert.pem")) {
                 fos.write(cert.getEncoded());
             }
-            try (FileOutputStream fos = new FileOutputStream("src\\main\\java\\org\\example\\RootCert\\private_key.pem")) {
+            try (FileOutputStream fos = new FileOutputStream(path + separator + "RootCert" + separator + "private_key.pem")) {
                 fos.write(keyPair.getPrivate().getEncoded());
+            }*/
+            // Save the certificate in PEM format
+            try (PEMWriter pemWriter = new PEMWriter(new FileWriter(path + separator + "RootCert" + separator + "cert.pem"))) {
+                pemWriter.writeObject(cert);
+            }
+
+            // Save the private key in PEM format
+            try (PEMWriter pemWriter = new PEMWriter(new FileWriter(path + separator + "RootCert" + separator + "private_key.pem"))) {
+                pemWriter.writeObject(keyPair.getPrivate());
             }
 
             System.out.println("Certificate generated successfully!");

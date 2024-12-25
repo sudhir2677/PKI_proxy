@@ -1,4 +1,4 @@
-package org.example;
+package org.example.utils;
 
 import org.ini4j.Ini;
 
@@ -21,7 +21,7 @@ public class IniFileReader {
         initialize();
     }
     public IniFileReader(String filename) throws IOException {
-        initialize(new File(filename));
+        initialize(filename);
     }
 
     public IniFileReader(File fileToParse) throws IOException {
@@ -36,7 +36,7 @@ public class IniFileReader {
     }
 
     private void initialize(String filename) throws IOException {
-        initialize(new File(filename));
+        initialize(new File(IniFileReader.class.getClassLoader().getResource(filename).getFile()));
     }
 
     private void initialize(File fileToParse) throws IOException {
