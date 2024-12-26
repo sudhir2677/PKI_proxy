@@ -1,0 +1,26 @@
+[ req ]
+default_bits        = 2048
+default_keyfile     = privkey.pem
+distinguished_name   = req_distinguished_name
+x509_extensions      = v3_req
+
+[ req_distinguished_name ]
+countryName           = Country Name (2 letter code)
+countryName_default   = US
+stateOrProvinceName   = State or Province Name (full name)
+stateOrProvinceName_default = California
+localityName          = Locality Name (eg, city)
+localityName_default  = San Francisco
+0.organizationName    = Organization Name (eg, company)
+0.organizationName_default = MyCompanyProxy
+commonName            = Common Name (eg, server FQDN or YOUR name)
+commonName_default    = machine1.mycompany.com
+
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = SLN.AP.CACHE
+DNS.2 = SLN.APS.QUEUE

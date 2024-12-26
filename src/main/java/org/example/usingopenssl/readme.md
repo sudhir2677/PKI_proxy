@@ -56,7 +56,7 @@ The Root Certificate is a self-signed certificate, and it will be used to sign o
 
 1. **Generate the root private key**:
    ```bash
-   openssl genpkey -algorithm RSA -out root/root.key -aes256
+   openssl genpkey -algorithm RSA -out key.pem -aes256 -pass pass:YourSecurePasswordHere -pkeyopt rsa_keygen_bits:2048
    ```
 
 2. **Generate the root certificate (RootCert)**:
@@ -77,7 +77,7 @@ The CA certificate is issued by the root certificate and will be used to sign ot
 
 1. **Generate the CA private key**:
    ```bash
-   openssl genpkey -algorithm RSA -out ca/ca.key -aes256
+   openssl genpkey -algorithm RSA -out ca/ca.key -aes256 -pass pass:passkey -pkeyopt rsa_keygen_bits:2048
    ```
 
 2. **Create a certificate signing request (CSR) for the CA**:

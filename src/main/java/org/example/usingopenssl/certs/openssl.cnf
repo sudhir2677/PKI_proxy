@@ -1,0 +1,25 @@
+[ req ]
+default_bits        = 2048
+default_keyfile     = privkey.pem
+distinguished_name   = req_distinguished_name
+x509_extensions      = v3_ca
+
+[ req_distinguished_name ]
+countryName           = Country Name (2 letter code)
+countryName_default   = IE
+stateOrProvinceName   = State or Province Name (full name)
+stateOrProvinceName_default = Dublin
+localityName          = Locality Name (eg, city)
+localityName_default  = Stillorgan
+0.organizationName    = Organization Name (eg, company)
+0.organizationName_default = PKITestOrg
+commonName            = Common Name (eg, server FQDN or YOUR name)
+commonName_default    = CACert
+
+[ v3_ca ]
+basicConstraints = critical,CA:true
+keyUsage = digitalSignature, keyCertSign, cRLSign
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = INDIA01.SECUTIRY.VERSION
