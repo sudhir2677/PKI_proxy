@@ -1,9 +1,7 @@
-package org.example.RootCert;
+package org.example.CACert;
 
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.operator.ContentSigner;
@@ -12,17 +10,16 @@ import org.example.utils.FileSeparator;
 import org.example.utils.PathUtil;
 import org.example.utils.X509CertTemplate;
 
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.Security;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.Date;
+import java.security.spec.PKCS8EncodedKeySpec;
 
-public class RootCert {
+public class CACert {
 
     public void createCertTest() {
         try {
@@ -43,13 +40,24 @@ public class RootCert {
             // get RootCert by reading RootCertTemplate.ini file
             X509v3CertificateBuilder certBuilder = X509CertTemplate.getX509Certificate("RootCertTemplate.ini", keyPair.getPublic());
 
-            // Sign the certificate
-            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keyPair.getPrivate());
-            X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBuilder.build(signer));
+            // Load the root certificate and its private key (cert and private_key files)
+            FileInputStream certFile = new FileInputStream("path_to_cert.pem");
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            X509Certificate rootCert = (X509Certificate) certFactory.generateCertificate(certFile);
+
+            PrivateKey rootPrivateKey = (PrivateKey) KeyFactory.getInstance("RSA").generatePrivate(
+                    new PKCS8EncodedKeySpec(Files.readAllBytes(Paths.get("path_to_private_key.pem")))
+            );
+
+            // Sign the child certificate with the root private key
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(rootPrivateKey);
+            X509Certificate caCert = new JcaX509CertificateConverter().setProvider("BC")
+                    .getCertificate(certBuilder.build(signer));
+
 
             // Save the certificate in PEM format
             try (PEMWriter pemWriter = new PEMWriter(new FileWriter(path + separator + "RootCert" + separator + "cert.pem"))) {
-                pemWriter.writeObject(cert);
+                pemWriter.writeObject(caCert);
             }
 
             // Save the private key in PEM format

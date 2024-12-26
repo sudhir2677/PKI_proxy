@@ -26,7 +26,7 @@ public class X509CertTemplate {
         }
 
         // Set certificate details
-        X500Name subject = new X500Name("CN=AP cert Testing 2014,O=Msft corp,L=Noida,ST=Delhi,C=IN");
+        X500Name subject = getX509Subject(allData, "req_distinguished_name");
 
         // Certificate valid from now to one year
         Date startDate = new Date();
@@ -45,5 +45,25 @@ public class X509CertTemplate {
                 publicKey                // Public key
         );
         return certBuilder;
+    }
+
+    private static X500Name getX509Subject(Map<String, Map<String, String>> iniConfig, String parameterList) {
+        // Get the section "subject" from the INI file
+        Map<String, String> subjectData = iniConfig.get(parameterList);
+
+        // Extract data and create the X500Name
+        String cn = subjectData.get("commonName");
+        String o = subjectData.get("organizationName");
+        String l = subjectData.get("localityName");
+        String st = subjectData.get("stateOrProvinceName");
+        String c = subjectData.get("countryName");
+
+        // Construct the X500Name
+        String distinguishedName = "CN=" + cn + ",O=" + o + ",L=" + l + ",ST=" + st + ",C=" + c;
+        System.out.println("data : " + distinguishedName);
+        X500Name subject = new X500Name(distinguishedName);
+        // Set certificate details
+//        X500Name subject = new X500Name("CN=AP cert Testing 2014,O=Msft corp,L=Noida,ST=Delhi,C=IN");
+        return subject;
     }
 }
